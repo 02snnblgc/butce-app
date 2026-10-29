@@ -1,4 +1,3 @@
-/* Tema, para birimi, ayarlar, PIN değiştir */
 const Settings = (() => {
   function applyAll() {
     const s = Store.getSettings();
@@ -62,24 +61,22 @@ const Settings = (() => {
       UI.toast('PIN güncellendi', 'success');
     });
 
-    // === DÜZELTİLEN KISIM: Kapatma Butonları ===
-    // Tıklama olayını doğrudan butonun kendisine atıyoruz (içindeki ikona değil)
-    document.querySelectorAll('[data-close-modal]').forEach(el => {
-      el.addEventListener('click', (e) => {
-        // Tıklanan elemanın en yakınındaki .modal sınıfına sahip kapsayıcıyı bul ve kapat
-        const modal = e.currentTarget.closest('.modal');
+    // AYARLAR MENÜSÜ KAPATMA DÜZELTMESİ (Tıklamayı doğrudan butona veriyoruz)
+    document.querySelectorAll('[data-close-modal]').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        // Butonun bulunduğu en yakın modal penceresini bul ve kapat
+        const modal = this.closest('.modal');
         if (modal) modal.classList.remove('open');
       });
     });
 
-    // Modal dışına tıklama (Arka plana tıklayınca kapanması için)
+    // Dışarı tıklayınca kapatma
     document.querySelectorAll('.modal').forEach(m => {
       m.addEventListener('click', (e) => { 
         if (e.target === m) m.classList.remove('open'); 
       });
     });
 
-    // Kategori ekle/sil
     document.querySelectorAll('[data-add-cat]').forEach(btn => {
       btn.addEventListener('click', () => {
         const type = btn.dataset.addCat;
@@ -88,14 +85,11 @@ const Settings = (() => {
       });
     });
 
-    // Kategori silme (event delegation)
     document.getElementById('category-modal').addEventListener('click', (e) => {
       const btn = e.target.closest('[data-cat-remove]');
       if (!btn) return;
-      const type = btn.dataset.catRemove;
-      const name = btn.dataset.catName;
-      if (confirm(`"${name}" kategorisini silmek istediğinize emin misiniz?`)) {
-        Categories.remove(type, name);
+      if (confirm(`"${btn.dataset.catName}" kategorisini silmek istediğinize emin misiniz?`)) {
+        Categories.remove(btn.dataset.catRemove, btn.dataset.catName);
       }
     });
   }
