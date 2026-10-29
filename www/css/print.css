@@ -1,0 +1,13 @@
+@media print {
+  body{background:#fff!important;color:#000!important;padding:0;}
+  #auth-screen,.app-header,.period-selector,#transaction-form,
+  .filter-grid,.btn,.icon-btn,.hamburger,#alert-banner,#budget-banner,
+  .modal,#toast-container,.settings-bar,.tx-actions,#category-modal{display:none!important;}
+  #app-screen{display:block!important;max-width:100%!important;}
+  .content-grid{display:block!important;}
+  .card,.dash-card{border:1px solid #ccc!important;box-shadow:none!important;margin-bottom:12px!important;break-inside:avoid;}
+  .transaction-list{max-height:none!important;overflow:visible!important;}
+  .print-header{display:block!important;text-align:center;margin-bottom:18px;border-bottom:2px solid #333;padding-bottom:10px;}
+  .transaction-item{border:1px solid #ddd!important;background:#fff!important;}
+  .badge{border:1px solid #999!important;}
+}
