@@ -24,13 +24,17 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Fix Kotlin Duplicate Classes
+      - name: Fix Kotlin Conflicts
         run: |
           cd android
           echo "" >> build.gradle
-          echo "configurations.all {" >> build.gradle
-          echo "    resolutionStrategy {" >> build.gradle
-          echo "        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'" >> build.gradle
+          echo "subprojects {" >> build.gradle
+          echo "    configurations.all {" >> build.gradle
+          echo "        resolutionStrategy {" >> build.gradle
+          echo "            force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'" >> build.gradle
+          echo "        }" >> build.gradle
+          echo "        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk7'" >> build.gradle
+          echo "        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-stdlib-jdk8'" >> build.gradle
           echo "    }" >> build.gradle
           echo "}" >> build.gradle
           cd ..
