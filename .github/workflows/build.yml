@@ -24,6 +24,17 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Fix Kotlin Duplicate Classes
+        run: |
+          cd android
+          echo "" >> build.gradle
+          echo "configurations.all {" >> build.gradle
+          echo "    resolutionStrategy {" >> build.gradle
+          echo "        force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'" >> build.gradle
+          echo "    }" >> build.gradle
+          echo "}" >> build.gradle
+          cd ..
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
