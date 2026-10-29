@@ -62,14 +62,21 @@ const Settings = (() => {
       UI.toast('PIN güncellendi', 'success');
     });
 
-    // Modal kapat
+    // === DÜZELTİLEN KISIM: Kapatma Butonları ===
+    // Tıklama olayını doğrudan butonun kendisine atıyoruz (içindeki ikona değil)
     document.querySelectorAll('[data-close-modal]').forEach(el => {
-      el.addEventListener('click', (e) => e.target.closest('.modal').classList.remove('open'));
+      el.addEventListener('click', (e) => {
+        // Tıklanan elemanın en yakınındaki .modal sınıfına sahip kapsayıcıyı bul ve kapat
+        const modal = e.currentTarget.closest('.modal');
+        if (modal) modal.classList.remove('open');
+      });
     });
 
-    // Modal dışına tıklama
+    // Modal dışına tıklama (Arka plana tıklayınca kapanması için)
     document.querySelectorAll('.modal').forEach(m => {
-      m.addEventListener('click', (e) => { if (e.target === m) m.classList.remove('open'); });
+      m.addEventListener('click', (e) => { 
+        if (e.target === m) m.classList.remove('open'); 
+      });
     });
 
     // Kategori ekle/sil
