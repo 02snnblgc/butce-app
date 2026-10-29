@@ -5,8 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#8b5cf6">
   <title>Bütçe Asistanı Pro</title>
+  
+  <!-- AMBLEM (İKON) EKLENDİ -->
+  <link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238b5cf6'/><path d='M30 40h40v30a10 10 0 01-10 10H40a10 10 0 01-10-10V40z' fill='white'/><path d='M30 30h40a5 5 0 015 5v5H25v-5a5 5 0 015-5z' fill='%23a78bfa'/><circle cx='65' cy='55' r='5' fill='%238b5cf6'/></svg>">
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" type="image/png" href="icon.png">
+  
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="css/main.css">
@@ -14,22 +17,14 @@
 </head>
 <body>
 
-<!-- ========== GİRİŞ EKRANI ========== -->
 <div id="auth-screen">
   <div class="auth-card">
     <h2><i class="fa-solid fa-wallet"></i> Bütçe Asistanı Pro</h2>
-
-    <!-- Profil Foto -->
     <div class="avatar-uploader">
-      <div class="avatar-preview" id="avatar-preview">
-        <i class="fa-solid fa-user"></i>
-      </div>
-      <label class="avatar-edit-label" for="avatar-file">
-        <i class="fa-solid fa-camera"></i>
-      </label>
+      <div class="avatar-preview" id="avatar-preview"><i class="fa-solid fa-user"></i></div>
+      <label class="avatar-edit-label" for="avatar-file"><i class="fa-solid fa-camera"></i></label>
       <input type="file" id="avatar-file" accept="image/*" hidden>
     </div>
-
     <form id="login-form">
       <div class="form-group">
         <label for="username-input">Kullanıcı Adı</label>
@@ -49,7 +44,6 @@
   </div>
 </div>
 
-<!-- ========== ANA UYGULAMA ========== -->
 <div id="app-screen" style="display:none;">
   <div class="print-header">
     <h2>Aylık Gelir - Gider ve Bütçe Raporu</h2>
@@ -64,35 +58,26 @@
         <span class="user-sub">Aktif Hesap</span>
       </div>
     </div>
-
     <button class="hamburger" id="hamburger-btn" aria-label="Menü"><i class="fa-solid fa-bars"></i></button>
-
     <div class="settings-bar" id="settings-bar">
       <button class="icon-btn" data-action="export-pdf" title="PDF / Rapor" aria-label="PDF"><i class="fa-solid fa-file-pdf"></i></button>
       <button class="icon-btn" data-action="toggle-theme" title="Tema" aria-label="Tema"><i class="fa-solid fa-moon" id="theme-icon"></i></button>
       <button class="icon-btn" data-action="open-settings" title="Ayarlar" aria-label="Ayarlar"><i class="fa-solid fa-gear"></i></button>
       <button class="icon-btn" data-action="export-json" title="Yedekle" aria-label="Yedekle"><i class="fa-solid fa-download"></i></button>
-      <label class="icon-btn" title="İçe Aktar" aria-label="İçe aktar">
-        <i class="fa-solid fa-upload"></i>
-        <input type="file" id="import-file" hidden accept="application/json">
-      </label>
+      <label class="icon-btn" title="İçe Aktar" aria-label="İçe aktar"><i class="fa-solid fa-upload"></i><input type="file" id="import-file" hidden accept="application/json"></label>
       <button class="icon-btn" data-action="logout" title="Çıkış" aria-label="Çıkış"><i class="fa-solid fa-right-from-bracket"></i></button>
     </div>
   </header>
 
-  <!-- Alarm / Uyarı Banner -->
   <div id="alert-banner" class="alert-banner" role="alert">
     <i class="fa-solid fa-triangle-exclamation"></i>
     <div id="alert-banner-text"></div>
   </div>
-
-  <!-- Bütçe Aşım Banner -->
   <div id="budget-banner" class="alert-banner budget" role="alert" style="display:none;">
     <i class="fa-solid fa-gauge-high"></i>
     <div id="budget-banner-text"></div>
   </div>
 
-  <!-- Dönem Seçici + Navigasyon -->
   <div class="period-selector">
     <button class="icon-btn" id="prev-month" aria-label="Önceki ay"><i class="fa-solid fa-chevron-left"></i></button>
     <div class="period-center">
@@ -102,33 +87,26 @@
     <button class="icon-btn" id="next-month" aria-label="Sonraki ay"><i class="fa-solid fa-chevron-right"></i></button>
   </div>
 
-  <!-- Özet Kartları -->
   <div class="dashboard-grid">
     <div class="dash-card"><h4>Toplam Gelir</h4><div class="amount income" id="total-income">0,00 ₺</div></div>
     <div class="dash-card"><h4>Toplam Gider</h4><div class="amount expense" id="total-expense">0,00 ₺</div></div>
     <div class="dash-card"><h4>Net Durum</h4><div class="amount balance" id="net-balance">0,00 ₺</div></div>
   </div>
 
-  <!-- Kategori Özeti -->
   <div class="card">
     <h3><i class="fa-solid fa-chart-pie" style="color:var(--accent);"></i> Kategori Bazlı Özet</h3>
     <div id="category-summary" class="category-summary"></div>
   </div>
 
   <div class="content-grid">
-    <!-- İşlem Formu -->
     <div class="card">
       <h3><i class="fa-solid fa-circle-plus" style="color:var(--accent);"></i> Yeni İşlem</h3>
       <form id="transaction-form">
         <input type="hidden" id="edit-id">
         <div class="form-group">
           <label for="tx-type">İşlem Türü</label>
-          <select id="tx-type" class="form-control">
-            <option value="income">Gelir</option>
-            <option value="expense" selected>Gider</option>
-          </select>
+          <select id="tx-type" class="form-control"><option value="income">Gelir</option><option value="expense" selected>Gider</option></select>
         </div>
-
         <div class="form-group" id="category-wrap">
           <div class="category-row">
             <div style="flex:1;">
@@ -138,25 +116,11 @@
             <button type="button" class="icon-btn" data-action="manage-categories" title="Kategori Yönetimi"><i class="fa-solid fa-list"></i></button>
           </div>
         </div>
-
-        <div class="form-group">
-          <label for="tx-title">Açıklama</label>
-          <input type="text" id="tx-title" class="form-control" placeholder="Örn: Ev Kirası, Maaş..." required>
-        </div>
-        <div class="form-group">
-          <label for="tx-amount">Tutar</label>
-          <input type="number" step="0.01" id="tx-amount" class="form-control" placeholder="0.00" required>
-        </div>
-        <div class="form-group">
-          <label for="tx-date">İşlem / Son Ödeme Tarihi</label>
-          <input type="date" id="tx-date" class="form-control" required>
-        </div>
-        <div class="form-group checkbox-row">
-          <label><input type="checkbox" id="tx-paid"> Ödendi olarak işaretle</label>
-        </div>
-        <div class="form-group checkbox-row">
-          <label><input type="checkbox" id="tx-recurring"> Her ay tekrarla</label>
-        </div>
+        <div class="form-group"><label for="tx-title">Açıklama</label><input type="text" id="tx-title" class="form-control" placeholder="Örn: Ev Kirası, Maaş..." required></div>
+        <div class="form-group"><label for="tx-amount">Tutar</label><input type="number" step="0.01" id="tx-amount" class="form-control" placeholder="0.00" required></div>
+        <div class="form-group"><label for="tx-date">İşlem / Son Ödeme Tarihi</label><input type="date" id="tx-date" class="form-control" required></div>
+        <div class="form-group checkbox-row"><label><input type="checkbox" id="tx-paid"> Ödendi olarak işaretle</label></div>
+        <div class="form-group checkbox-row"><label><input type="checkbox" id="tx-recurring"> Her ay tekrarla</label></div>
         <div class="form-actions">
           <button type="submit" class="btn" id="tx-submit-btn">Kaydet</button>
           <button type="button" class="btn btn-secondary" id="tx-cancel-edit" style="display:none;">İptal</button>
@@ -165,40 +129,22 @@
     </div>
 
     <div>
-      <!-- Filtre / Sıralama -->
       <div class="card">
         <h3><i class="fa-solid fa-filter" style="color:var(--accent);"></i> Filtre & Sıralama</h3>
         <div class="filter-grid">
           <input type="text" id="filter-search" class="form-control" placeholder="Ara...">
-          <select id="filter-type" class="form-control">
-            <option value="">Tüm Türler</option>
-            <option value="income">Gelir</option>
-            <option value="expense">Gider</option>
-          </select>
-          <select id="filter-paid" class="form-control">
-            <option value="">Tüm Durumlar</option>
-            <option value="paid">Ödendi</option>
-            <option value="unpaid">Ödenmedi</option>
-          </select>
-          <select id="filter-sort" class="form-control">
-            <option value="date-desc">Tarih ↓</option>
-            <option value="date-asc">Tarih ↑</option>
-            <option value="amount-desc">Tutar ↓</option>
-            <option value="amount-asc">Tutar ↑</option>
-          </select>
+          <select id="filter-type" class="form-control"><option value="">Tüm Türler</option><option value="income">Gelir</option><option value="expense">Gider</option></select>
+          <select id="filter-paid" class="form-control"><option value="">Tüm Durumlar</option><option value="paid">Ödendi</option><option value="unpaid">Ödenmedi</option></select>
+          <select id="filter-sort" class="form-control"><option value="date-desc">Tarih ↓</option><option value="date-asc">Tarih ↑</option><option value="amount-desc">Tutar ↓</option><option value="amount-asc">Tutar ↑</option></select>
         </div>
-        <button class="btn btn-secondary" id="btn-copy-prev-month" style="margin-top:10px;">
-          <i class="fa-solid fa-copy"></i> Önceki Ayın Sabit Giderlerini Kopyala
-        </button>
+        <button class="btn btn-secondary" id="btn-copy-prev-month" style="margin-top:10px;"><i class="fa-solid fa-copy"></i> Önceki Ayın Sabit Giderlerini Kopyala</button>
       </div>
 
-      <!-- İşlem Listesi -->
       <div class="card">
         <h3><i class="fa-solid fa-list-check" style="color:var(--accent);"></i> İşlemler <span id="tx-count" class="badge normal"></span></h3>
         <div id="transaction-container" class="transaction-list"></div>
       </div>
 
-      <!-- Notlar -->
       <div class="card">
         <h3><i class="fa-solid fa-note-sticky" style="color:var(--accent);"></i> Dönem Notları</h3>
         <textarea id="period-notes" class="notes-area" placeholder="Bu aya özel notlar..."></textarea>
@@ -207,13 +153,10 @@
   </div>
 </div>
 
-<!-- ========== MODALLAR ========== -->
-
-<!-- Ayarlar -->
+<!-- AYARLAR MODALI (Kapatma butonları düzeltildi) -->
 <div class="modal" id="settings-modal">
   <div class="modal-content">
     <h3>Ayarlar</h3>
-
     <div class="settings-section">
       <h4>Renk Paleti</h4>
       <div class="theme-options">
@@ -224,65 +167,32 @@
         <div class="theme-circle" style="background:#0ea5e9" data-accent="skyblue"></div>
       </div>
     </div>
-
     <div class="settings-section">
       <h4>Para Birimi</h4>
-      <select id="currency-select" class="form-control">
-        <option value="TRY">₺ Türk Lirası</option>
-        <option value="USD">$ Dolar</option>
-        <option value="EUR">€ Euro</option>
-        <option value="GBP">£ Sterlin</option>
-      </select>
+      <select id="currency-select" class="form-control"><option value="TRY">₺ Türk Lirası</option><option value="USD">$ Dolar</option><option value="EUR">€ Euro</option><option value="GBP">£ Sterlin</option></select>
     </div>
-
     <div class="settings-section">
       <h4>Bildirim & Alarm</h4>
-      <label class="switch-row">
-        <input type="checkbox" id="notif-toggle">
-        <span>Tarayıcı bildirimleri</span>
-      </label>
-      <label class="switch-row">
-        <input type="checkbox" id="sound-toggle" checked>
-        <span>Sesli alarm</span>
-      </label>
-      <label class="switch-row">
-        <input type="checkbox" id="alarm-toggle" checked>
-        <span>Görüntülü alarm</span>
-      </label>
-      <button class="btn btn-secondary" id="btn-test-alarm" style="margin-top:8px;">
-        <i class="fa-solid fa-bell"></i> Alarmı Test Et
-      </button>
+      <label class="switch-row"><input type="checkbox" id="notif-toggle"><span>Tarayıcı bildirimleri</span></label>
+      <label class="switch-row"><input type="checkbox" id="sound-toggle" checked><span>Sesli alarm</span></label>
+      <label class="switch-row"><input type="checkbox" id="alarm-toggle" checked><span>Görüntülü alarm</span></label>
+      <button class="btn btn-secondary" id="btn-test-alarm" style="margin-top:8px;"><i class="fa-solid fa-bell"></i> Alarmı Test Et</button>
     </div>
-
     <div class="settings-section">
       <h4>PIN Değiştir</h4>
       <input type="password" id="new-pin" class="form-control" placeholder="Yeni PIN (4-6)" inputmode="numeric" maxlength="6" style="margin-bottom:8px;">
       <input type="password" id="new-pin-confirm" class="form-control" placeholder="Yeni PIN Tekrar" inputmode="numeric" maxlength="6" style="margin-bottom:8px;">
       <button class="btn" id="btn-change-pin">PIN'i Güncelle</button>
     </div>
-
     <button class="btn btn-secondary" data-close-modal style="margin-top:15px;">Kapat</button>
   </div>
 </div>
 
-<!-- Kategori Yönetimi -->
 <div class="modal" id="category-modal">
   <div class="modal-content">
     <h3>Kategori Yönetimi</h3>
-    <div class="form-group">
-      <label>Yeni Gelir Kategorisi</label>
-      <div class="inline-add">
-        <input type="text" id="new-income-cat" class="form-control" placeholder="Örn: Maaş">
-        <button type="button" class="btn" data-add-cat="income">Ekle</button>
-      </div>
-    </div>
-    <div class="form-group">
-      <label>Yeni Gider Kategorisi</label>
-      <div class="inline-add">
-        <input type="text" id="new-expense-cat" class="form-control" placeholder="Örn: Kira">
-        <button type="button" class="btn" data-add-cat="expense">Ekle</button>
-      </div>
-    </div>
+    <div class="form-group"><label>Yeni Gelir Kategorisi</label><div class="inline-add"><input type="text" id="new-income-cat" class="form-control" placeholder="Örn: Maaş"><button type="button" class="btn" data-add-cat="income">Ekle</button></div></div>
+    <div class="form-group"><label>Yeni Gider Kategorisi</label><div class="inline-add"><input type="text" id="new-expense-cat" class="form-control" placeholder="Örn: Kira"><button type="button" class="btn" data-add-cat="expense">Ekle</button></div></div>
     <div class="category-manage-list">
       <h4>Gelir</h4><div id="cat-list-income"></div>
       <h4>Gider</h4><div id="cat-list-expense"></div>
@@ -291,21 +201,16 @@
   </div>
 </div>
 
-<!-- Bütçe Limiti -->
 <div class="modal" id="budget-modal">
   <div class="modal-content">
     <h3>Aylık Bütçe Limiti</h3>
     <p style="font-size:.85rem;color:var(--text-muted);">Bu dönem için toplam gider limiti belirleyin. Aşıldığında uyarı verilir.</p>
-    <div class="form-group">
-      <label>Limit Tutarı</label>
-      <input type="number" id="budget-limit" class="form-control" step="0.01" placeholder="0.00">
-    </div>
+    <div class="form-group"><label>Limit Tutarı</label><input type="number" id="budget-limit" class="form-control" step="0.01" placeholder="0.00"></div>
     <button class="btn" id="btn-save-budget">Kaydet</button>
     <button class="btn btn-secondary" data-close-modal style="margin-top:8px;">Kapat</button>
   </div>
 </div>
 
-<!-- Görüntülü Alarm -->
 <div class="modal alarm-modal" id="alarm-modal">
   <div class="modal-content alarm-content">
     <div class="alarm-pulse"><i class="fa-solid fa-bell"></i></div>
@@ -316,7 +221,6 @@
   </div>
 </div>
 
-<!-- Toast -->
 <div id="toast-container"></div>
 
 <script src="js/storage.js"></script>
