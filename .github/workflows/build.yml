@@ -21,10 +21,7 @@ jobs:
       - name: Setup Capacitor
         run: |
           npx cap init "Butce Asistani" "com.butce.app" --web-dir=www
-          npm install @capacitor/assets
-          mkdir -p assets
-          cp www/icon.png assets/icon.png
-          npx capacitor-assets generate --android
+          npm install @capacitor-community/native-audio
           npx cap add android
           npx cap sync android
 
