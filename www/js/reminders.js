@@ -11,7 +11,21 @@ const Reminders = (() => {
       try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
       catch { audioCtx = null; }
     }
-    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    // === YENİ EKLENEN KISIM: Sessiz ses ile WebView'ı uyandır ===
+    // Bu, Android WebView'un ses odağını almasına yardımcı olur.
+    try {
+      const silentAudio = new Audio();
+      // Çok kısa, sessiz bir base64 ses verisi
+      silentAudio.src = "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA";
+      silentAudio.volume = 0.01; 
+      silentAudio.play().catch(() => {}); 
+    } catch (e) {}
+    // ==========================================
+    
     return audioCtx;
   }
 
@@ -28,7 +42,7 @@ const Reminders = (() => {
       osc.type = 'sine';
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.exponentialRampToValueAtTime(0.25, t + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.4, t + 0.01); // Ses seviyesi biraz artırıldı
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
       osc.connect(gain).connect(ctx.destination);
       osc.start(t);
@@ -41,9 +55,7 @@ const Reminders = (() => {
     stopAlarmLoop();
     const s = Store.getSettings();
     if (!s.sound) return;
-    // İlk bip hemen
     beep(4, 1000, 0.2, 0.25);
-    // 3 saniyede bir tekrar
     alarmInterval = setInterval(() => {
       const s2 = Store.getSettings();
       if (!s2.sound) return;
@@ -55,7 +67,6 @@ const Reminders = (() => {
     if (alarmInterval) { clearInterval(alarmInterval); alarmInterval = null; }
   }
 
-  /* Görüntülü alarm modalı */
   function showAlarmModal(txs) {
     const s = Store.getSettings();
     if (!s.alarm) return;
@@ -89,7 +100,6 @@ const Reminders = (() => {
     UI.toast('10 dakika ertelendi', 'info');
   }
 
-  /* Yaklaşan / geçmiş ödemeleri bul */
   function findDue() {
     const data = Transactions.getData();
     const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -108,7 +118,6 @@ const Reminders = (() => {
     return due;
   }
 
-  /* Tarayıcı bildirimi */
   async function requestNotif() {
     if (!('Notification' in window)) return false;
     if (Notification.permission === 'granted') { notifPermission = true; return true; }
@@ -129,9 +138,6 @@ const Reminders = (() => {
         navigator.serviceWorker.ready.then(reg => {
           reg.showNotification(title, {
             body,
-            icon: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E',
-            badge: 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%92%B0%3C/text%3E%3C/svg%3E',
-            tag: 'butce-alarm-' + Date.now(),
             requireInteraction: true,
             vibrate: [200, 100, 200]
           });
@@ -139,13 +145,11 @@ const Reminders = (() => {
       } else {
         new Notification(title, { body });
       }
-    } catch (e) { /* sessiz geç */ }
+    } catch (e) { }
   }
 
-  /* Ana kontrol — her renderAll sonrası veya interval ile çalışır */
   function checkAndAlarm(silent = false) {
     const due = findDue();
-    // Banner güncelle
     const banner = document.getElementById('alert-banner');
     const text = document.getElementById('alert-banner-text');
     if (due.length > 0) {
@@ -156,7 +160,6 @@ const Reminders = (() => {
     }
 
     if (due.length > 0 && !silent) {
-      // Sesli + görüntülü
       const s = Store.getSettings();
       if (s.alarm) showAlarmModal(due);
       if (s.notif) sendNotif('💰 Ödeme Hatırlatması', `${due.length} işlem için ödeme zamanı geldi!`);
@@ -167,24 +170,24 @@ const Reminders = (() => {
     document.getElementById('alarm-ack').addEventListener('click', closeAlarm);
     document.getElementById('alarm-snooze').addEventListener('click', snooze);
 
-    // Kullanıcı etkileşiminde audio context aç (tarayıcı politikası)
-    document.body.addEventListener('click', () => ensureAudio(), { once: true });
+    // Mobil uygulamada sesin çalışması için ilk tıklamayı yakala ve sesi başlat
+    document.body.addEventListener('click', () => {
+      ensureAudio();
+    }, { once: true });
 
-    // Her 30 saniyede kontrol (sekme açıkken)
     setInterval(() => checkAndAlarm(false), 30000);
 
-    // Uygulama görünür olunca kontrol
     document.addEventListener('visibilitychange', () => {
       if (!document.hidden) checkAndAlarm(false);
     });
 
-    // Alarm test butonu
     document.getElementById('btn-test-alarm').addEventListener('click', () => {
+      // Test butonuna basıldığında sesi zorla başlat
+      ensureAudio();
       showAlarmModal([{ title: 'Test Alarmı', category: 'Sistem', date: new Date().toISOString().slice(0,10), amount: 0 }]);
       if (Store.getSettings().notif) sendNotif('Test Alarmı', 'Bildirimler çalışıyor.');
     });
 
-    // Bildirim izni toggle
     document.getElementById('notif-toggle').addEventListener('change', async (e) => {
       const s = Store.getSettings();
       if (e.target.checked) {
