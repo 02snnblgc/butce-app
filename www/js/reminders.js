@@ -1,49 +1,85 @@
+/* Sesli + görüntülü alarm + tarayıcı bildirimi (Native Audio Destekli) */
 const Reminders = (() => {
   let audioCtx = null;
   let alarmInterval = null;
   let currentAlarmId = null;
-  let snoozed = {};
+  let snoozed = {}; // { txId: timestamp }
   let notifPermission = Notification?.permission === 'granted';
-  let isAudioUnlocked = false;
+  let isNativeAudioLoaded = false;
 
-  // Android WebView'da sesi kesin olarak açan fonksiyon
-  function unlockAudio() {
-    if (isAudioUnlocked) return;
-    
-    // 1. Sessiz bir HTML5 Audio objesi ile sistemi uyandır
-    try {
-      const silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
-      silentAudio.volume = 0.01;
-      silentAudio.play().then(() => {
-        // 2. Web Audio API'yi başlat
-        if (!audioCtx) {
-          try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch { }
-        }
-        if (audioCtx && audioCtx.state === 'suspended') {
-          audioCtx.resume();
-        }
-        isAudioUnlocked = true;
-      }).catch(e => {});
-    } catch (e) {}
+  // Native Audio eklentisini başlat
+  async function initNativeAudio() {
+    if (window.Capacitor && window.Capacitor.Plugins.NativeAudio) {
+      try {
+        // Çok kısa, 1 saniyelik bir "bip" sesi (Base64 WAV formatında)
+        const beepBase64 = "data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=";
+        
+        await window.Capacitor.Plugins.NativeAudio.preloadSimple({
+          assetId: 'beep',
+          assetPath: beepBase64,
+          audioChannelNum: 1,
+          isUrl: true
+        });
+        isNativeAudioLoaded = true;
+        console.log("Native Audio başarıyla yüklendi.");
+      } catch (e) {
+        console.warn("Native Audio yüklenemedi, Web Audio kullanılacak.", e);
+        isNativeAudioLoaded = false;
+      }
+    }
   }
 
-  function playBeep(times = 3, freq = 880, dur = 0.18, gap = 0.22) {
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+      catch { audioCtx = null; }
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
+    
+    // WebView'ı uyandırmak için sessiz ses hilesi
+    try {
+      const silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+      silentAudio.volume = 0.01; 
+      silentAudio.play().catch(() => {}); 
+    } catch (e) {}
+    
+    return audioCtx;
+  }
+
+  /* Bip sesi çal */
+  async function beep(times = 3, freq = 880, dur = 0.18, gap = 0.22) {
     const s = Store.getSettings();
     if (!s.sound) return;
-    
-    unlockAudio();
-    if (!audioCtx) return;
 
-    let t = audioCtx.currentTime;
+    // 1. Öncelik: Native Audio (Android için en garantili yöntem)
+    if (isNativeAudioLoaded && window.Capacitor?.Plugins?.NativeAudio) {
+      try {
+        // Belirlediğimiz aralıklarla sesi çal
+        for (let i = 0; i < times; i++) {
+          await window.Capacitor.Plugins.NativeAudio.play({ assetId: 'beep' });
+          await new Promise(r => setTimeout(r, gap * 1000));
+        }
+        return; // Native ses çaldıysa Web Audio'ya geçme
+      } catch (e) {
+        console.warn("Native beep başarısız, Web Audio deneniyor...", e);
+      }
+    }
+
+    // 2. Yedek Plan: Web Audio API
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    let t = ctx.currentTime;
     for (let i = 0; i < times; i++) {
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
       osc.type = 'sine';
       osc.frequency.value = freq;
       gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.exponentialRampToValueAtTime(0.5, t + 0.01); 
+      gain.gain.exponentialRampToValueAtTime(0.4, t + 0.01);
       gain.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-      osc.connect(gain).connect(audioCtx.destination);
+      osc.connect(gain).connect(ctx.destination);
       osc.start(t);
       osc.stop(t + dur);
       t += gap;
@@ -54,11 +90,11 @@ const Reminders = (() => {
     stopAlarmLoop();
     const s = Store.getSettings();
     if (!s.sound) return;
-    
-    playBeep(4, 1000, 0.2, 0.25);
+    beep(4, 1000, 0.2, 0.25);
     alarmInterval = setInterval(() => {
-      if (!Store.getSettings().sound) return;
-      playBeep(3, 1200, 0.15, 0.2);
+      const s2 = Store.getSettings();
+      if (!s2.sound) return;
+      beep(3, 1200, 0.15, 0.2);
     }, 3000);
   }
 
@@ -149,7 +185,7 @@ const Reminders = (() => {
     const text = document.getElementById('alert-banner-text');
     if (due.length > 0) {
       banner.style.display = 'flex';
-      text.textContent = `${due.length} adet ödeme tarihi geldi/geçti!`;
+      text.textContent = `${due.length} adet ödeme tarihi geldi/geçti! Bunları ödediyseniz "Ödendi" olarak işaretleyin.`;
     } else {
       banner.style.display = 'none';
     }
@@ -162,12 +198,14 @@ const Reminders = (() => {
   }
 
   function bind() {
+    // Uygulama başlarken Native Audio'yu hazırla
+    initNativeAudio();
+
     document.getElementById('alarm-ack').addEventListener('click', closeAlarm);
     document.getElementById('alarm-snooze').addEventListener('click', snooze);
 
-    // Sayfaya ilk tıklandığında ses motorunu zorla uyandır
-    document.body.addEventListener('click', unlockAudio, { once: true });
-    document.body.addEventListener('touchstart', unlockAudio, { once: true });
+    // Web Audio için ilk etkileşimi yakala
+    document.body.addEventListener('click', () => { ensureAudio(); }, { once: true });
 
     setInterval(() => checkAndAlarm(false), 30000);
 
@@ -176,11 +214,8 @@ const Reminders = (() => {
     });
 
     document.getElementById('btn-test-alarm').addEventListener('click', () => {
-      unlockAudio(); // Test butonuna basıldığında sesi kilitten çıkar
-      setTimeout(() => {
-        showAlarmModal([{ title: 'Test Alarmı', category: 'Sistem', date: new Date().toISOString().slice(0,10), amount: 0 }]);
-      }, 100); // Sesi başlattıktan 0.1 saniye sonra alarmı göster
-      
+      ensureAudio();
+      showAlarmModal([{ title: 'Test Alarmı', category: 'Sistem', date: new Date().toISOString().slice(0,10), amount: 0 }]);
       if (Store.getSettings().notif) sendNotif('Test Alarmı', 'Bildirimler çalışıyor.');
     });
 
@@ -216,5 +251,5 @@ const Reminders = (() => {
     }
   }
 
-  return { bind, checkAndAlarm, requestNotif, sendNotif, playBeep, requestPermissionOnFirstUse };
+  return { bind, checkAndAlarm, requestNotif, sendNotif, beep, requestPermissionOnFirstUse };
 })();
